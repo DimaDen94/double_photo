@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
 
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -76,6 +77,7 @@ public class MainActivity extends Activity {
         updateFocus();
         setPreviewSize(FULL_SCREEN);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -86,8 +88,8 @@ public class MainActivity extends Activity {
 
     public void onClickPicture(View view) {
 
-        backPhotoFile = SDWorker.generateFileUri(directory,0);
-        frontPhotoFile = SDWorker.generateFileUri(directory,1);
+        backPhotoFile = SDWorker.generateFileUri(directory, 0);
+        frontPhotoFile = SDWorker.generateFileUri(directory, 1);
         takeAndSaveBackPhoto(backPhotoFile, frontPhotoFile);
 
     }
@@ -106,14 +108,18 @@ public class MainActivity extends Activity {
                             @Override
                             public void onPictureTaken(byte[] data, Camera camera) {
                                 try {
-                                    SDWorker.writePhotoAndPutToGallery(file, data,MainActivity.this);
-
-                                    MainActivity.this.camera = CameraControler.flipCamera(camera,1,holder);
+                                    SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
+                                    MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
+                                    Log.d(TAG, "flip");
                                     setCameraDisplayOrientationAndParamsToCamera(1);
-
-                                    takeAndSaveFrontPhoto(file2);
                                 } catch (Exception e) {
+                                    setCameraDisplayOrientationAndParamsToCamera(1);
                                     e.printStackTrace();
+                                } finally {
+
+                                    takeAndSaveFrontPhotoAndDoPicture(file2);
+                                    Log.d(TAG, "take");
+
                                 }
 
                             }
@@ -126,14 +132,14 @@ public class MainActivity extends Activity {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
                     try {
-                        SDWorker.writePhotoAndPutToGallery(file, data,MainActivity.this);
-
-                        MainActivity.this.camera = CameraControler.flipCamera(camera,1,holder);
-
-                        takeAndSaveFrontPhoto(file2);
-
+                        SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
+                        MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
                     } catch (Exception e) {
+
                         e.printStackTrace();
+                    } finally {
+                        setCameraDisplayOrientationAndParamsToCamera(1);
+                        takeAndSaveFrontPhotoAndDoPicture(file2);
                     }
                 }
             });
@@ -142,7 +148,7 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private boolean takeAndSaveFrontPhoto(final File file) {
+    private boolean takeAndSaveFrontPhotoAndDoPicture(final File file) {
         //is auto focus
         List<String> supportedFocusModes = camera.getParameters().getSupportedFocusModes();
         boolean hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
@@ -158,17 +164,20 @@ public class MainActivity extends Activity {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 try {
-                    SDWorker.writePhotoAndPutToGallery(file, data,MainActivity.this);
-                    camera.startPreview();
+                    SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
+                    //camera.startPreview();
 
                     Bitmap bBitmap = BitmapFactory.decodeFile(backPhotoFile.getAbsolutePath());
+                    Log.d(TAG, bBitmap.getWidth() + "    " + bBitmap.getHeight());
                     Bitmap fBitmap = BitmapFactory.decodeFile(frontPhotoFile.getAbsolutePath());
+                    Log.d(TAG, fBitmap.getWidth() + "    " + fBitmap.getHeight());
+
                     int h = bBitmap.getWidth();
-                    int w = bBitmap.getWidth();
+                    int w = bBitmap.getHeight();
 
                     //bBitmap = rotateImage(getOrientationFromExif(backPhotoFile,0), bBitmap);
 
-                    doPicture(w, h, bBitmap, fBitmap);
+                    doPicture(h, w, bBitmap, fBitmap);
 
                     //do something
 
@@ -236,9 +245,15 @@ public class MainActivity extends Activity {
         sv.getLayoutParams().width = (int) (rectPreview.right);
     }
 
-    boolean setCameraDisplayOrientationAndParamsToCamera(int cameraId) {
+    private boolean setCameraDisplayOrientationAndParamsToCamera(int cameraId) {
+        // получаем инфо по камере cameraId
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
         // определяем насколько повернут экран от нормального положения
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
+
+        int cameraRotationOffset = info.orientation;
+
         int degrees = 0;
         switch (rotation) {
             case Surface.ROTATION_0:
@@ -257,10 +272,6 @@ public class MainActivity extends Activity {
 
         int result = 0;
 
-        // получаем инфо по камере cameraId
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        Camera.getCameraInfo(cameraId, info);
-
         // задняя камера
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
             result = ((360 - degrees) + info.orientation);
@@ -273,59 +284,11 @@ public class MainActivity extends Activity {
         result = result % 360;
         camera.setDisplayOrientation(result);
 
-        setParamsToCamera(rotation,degrees,info);
-
-        return true;
-    }
-
-    private void setParamsToCamera(int rotation,int degrees, Camera.CameraInfo info){
-        int r=0;
-
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.d(TAG, "1");
-                    r = ((360 - degrees) + info.orientation);
-                } else {
-                    Log.d(TAG, "2");
-                    r = ((360 - degrees) - info.orientation) + 180;
-                }
-
-                r = r % 360;
-                break;
-            case Surface.ROTATION_90:
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.d(TAG, "3");
-                    r = ((360 - degrees) + info.orientation);
-                } else {
-                    Log.d(TAG, "4");
-                    r = ((360 - degrees) - info.orientation);
-                }
-
-                r = r % 360;
-                break;
-            case Surface.ROTATION_180:
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.d(TAG, "5");
-                    r = ((360 - degrees) + info.orientation);
-                } else {
-                    Log.d(TAG, "6");
-                    r = ((360 - degrees) - info.orientation) + 180;
-                }
-
-                r = r % 360;
-                break;
-            case Surface.ROTATION_270:
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.d(TAG, "7");
-                    r = ((360 - degrees) + info.orientation);
-                } else {
-                    Log.d(TAG, "8");
-                    r = ((360 - degrees) - info.orientation);
-                }
-
-                r = r % 360;
-                break;
+        int rotate;
+        if (cameraId==1) {
+            rotate = (360 + cameraRotationOffset + degrees) % 360;
+        } else {
+            rotate = (360 + cameraRotationOffset - degrees) % 360;
         }
 
         Camera.Parameters parameters = camera.getParameters();
@@ -336,10 +299,11 @@ public class MainActivity extends Activity {
                 size = sizes.get(i);
         }
         parameters.setPictureSize(size.width, size.height);
-        parameters.set("jpeg-quality", 10);
-        parameters.setRotation(r);
-
+        parameters.set("jpeg-quality", 100);
+        Log.d(TAG,rotate+" r");
+        parameters.setRotation(rotate);
         camera.setParameters(parameters);
+        return true;
     }
 
     private void updateFocus() {
@@ -357,7 +321,7 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
-                    handler.postDelayed(this, 5000);
+                    handler.postDelayed(this, 3000);
                 } catch (Exception e) {
 
                 }
@@ -380,13 +344,13 @@ public class MainActivity extends Activity {
 
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        concatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100 /*ignored for PNG*/, bos);
+        concatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
         byte[] data = bos.toByteArray();
 
-        outputFile = SDWorker.generateFileUri(directory,2);
+        outputFile = SDWorker.generateFileUri(directory, 2);
 
         try {
-            SDWorker.writePhotoAndPutToGallery(outputFile, data,MainActivity.this);
+            SDWorker.writePhotoAndPutToGallery(outputFile, data, MainActivity.this);
         } catch (IOException e) {
             e.printStackTrace();
         }
