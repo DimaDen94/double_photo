@@ -1,4 +1,4 @@
-package com.example.dmitry.twocamers;
+package com.example.dmitry.twocamers.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.example.dmitry.twocamers.R;
 import com.example.dmitry.twocamers.utils.CameraControler;
 import com.example.dmitry.twocamers.utils.SDWorker;
 
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
 
         setCameraDisplayOrientationAndParamsToCamera(0);
 
-        updateFocus();
+        //updateFocus();
         setPreviewSize(FULL_SCREEN);
     }
 
@@ -102,29 +103,27 @@ public class MainActivity extends Activity {
             camera.autoFocus(new Camera.AutoFocusCallback() {
                 @Override
                 public void onAutoFocus(boolean success, Camera camera) {
-                    if (success) {
-                        // если удалось сфокусироваться, делаем снимок
-                        camera.takePicture(null, null, null, new Camera.PictureCallback() {
-                            @Override
-                            public void onPictureTaken(byte[] data, Camera camera) {
-                                try {
-                                    SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
-                                    MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
-                                    Log.d(TAG, "flip");
-                                    setCameraDisplayOrientationAndParamsToCamera(1);
-                                } catch (Exception e) {
-                                    setCameraDisplayOrientationAndParamsToCamera(1);
-                                    e.printStackTrace();
-                                } finally {
 
-                                    takeAndSaveFrontPhotoAndDoPicture(file2);
-                                    Log.d(TAG, "take");
-
-                                }
-
+                    // если удалось сфокусироваться, делаем снимок
+                    camera.takePicture(null, null, null, new Camera.PictureCallback() {
+                        @Override
+                        public void onPictureTaken(byte[] data, Camera camera) {
+                            try {
+                                SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
+                                MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
+                                Log.d(TAG, "flip");
+                                setCameraDisplayOrientationAndParamsToCamera(1);
+                            } catch (Exception e) {
+                                setCameraDisplayOrientationAndParamsToCamera(1);
+                                e.printStackTrace();
+                            } finally {
+                                takeAndSaveFrontPhotoAndDoPicture(file2);
+                                Log.d(TAG, "take");
                             }
-                        });
-                    }
+
+                        }
+                    });
+
                 }
             });
         } else {
@@ -172,12 +171,21 @@ public class MainActivity extends Activity {
                     Bitmap fBitmap = BitmapFactory.decodeFile(frontPhotoFile.getAbsolutePath());
                     Log.d(TAG, fBitmap.getWidth() + "    " + fBitmap.getHeight());
 
-                    int h = bBitmap.getWidth();
-                    int w = bBitmap.getHeight();
+                    int backH = bBitmap.getHeight();
+                    int backW = bBitmap.getWidth();
+                    RectF rectfBack = new RectF(0, 0, backW, backH);
 
+
+                    int frontH = bBitmap.getWidth();
+                    int frontW = bBitmap.getHeight();
+                    RectF rectfFront = new RectF(0, 0, frontH, frontW);
+
+                    Matrix matrix = new Matrix();
+                    matrix.setRectToRect(rectfFront, rectfBack, Matrix.ScaleToFit.START);
                     //bBitmap = rotateImage(getOrientationFromExif(backPhotoFile,0), bBitmap);
 
-                    doPicture(h, w, bBitmap, fBitmap);
+
+                    doPicture(backW, backH, bBitmap, fBitmap);
 
                     //do something
 
@@ -285,7 +293,7 @@ public class MainActivity extends Activity {
         camera.setDisplayOrientation(result);
 
         int rotate;
-        if (cameraId==1) {
+        if (cameraId == 1) {
             rotate = (360 + cameraRotationOffset + degrees) % 360;
         } else {
             rotate = (360 + cameraRotationOffset - degrees) % 360;
@@ -298,11 +306,14 @@ public class MainActivity extends Activity {
             if (sizes.get(i).width > size.width)
                 size = sizes.get(i);
         }
-        parameters.setPictureSize(size.width, size.height);
+        int w = (int) (size.width * 0.7);
+        int h = (int) (size.height * 0.7);
+        parameters.setPictureSize(w, h);
         parameters.set("jpeg-quality", 100);
-        Log.d(TAG,rotate+" r");
+        Log.d(TAG, rotate + " r");
         parameters.setRotation(rotate);
         camera.setParameters(parameters);
+
         return true;
     }
 
@@ -336,7 +347,8 @@ public class MainActivity extends Activity {
         Paint paint = null;
 
 
-        //frontBitmap = rotateImage(frontBitmap, frontPhotoFile);
+        frontBitmap = SDWorker.rotateImage(frontBitmap, frontPhotoFile);
+        //backBitmap = SDWorker.rotateImage2(backBitmap, frontPhotoFile);
 
         canvas.drawBitmap(backBitmap, 0, 0, paint);
         double correctHeight = reqHeight / 1.5;
@@ -361,13 +373,16 @@ public class MainActivity extends Activity {
     public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
         int width = bm.getWidth();
         int height = bm.getHeight();
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
+
         // CREATE A MATRIX FOR THE MANIPULATION
         Matrix matrix = new Matrix();
 
+        RectF fRect = new RectF(0, 0, width, height);
+        RectF sRect = new RectF(0, 0, newWidth, newHeight);
+
+        matrix.setRectToRect(fRect, sRect, Matrix.ScaleToFit.START);
         // RESIZE THE BIT MAP
-        matrix.postScale(scaleWidth, scaleHeight);
+        //matrix.postScale(scaleWidth, scaleHeight);
 
         // "RECREATE" THE NEW BITMAP
         Bitmap resizedBitmap = Bitmap.createBitmap(

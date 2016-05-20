@@ -1,9 +1,11 @@
-package com.example.dmitry.twocamers;
+package com.example.dmitry.twocamers.activity;
 
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
+
+import com.example.dmitry.twocamers.R;
 
 import java.io.File;
 
