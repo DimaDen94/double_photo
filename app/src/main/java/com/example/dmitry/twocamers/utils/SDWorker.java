@@ -51,18 +51,14 @@ public class SDWorker {
         Log.d(TAG, file.toString());
         fos.write(data);
         fos.close();
-
         return true;
     }
-
     private static void galleryAddPic(File file, Context c) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         Uri contentUri = Uri.fromFile(file);
         mediaScanIntent.setData(contentUri);
         c.sendBroadcast(mediaScanIntent);
     }
-
-
     public static Bitmap rotateImage(Bitmap bitmapSrc, File imagePath) {
         Matrix matrix = new Matrix();
         ExifInterface exif;
@@ -91,46 +87,8 @@ public class SDWorker {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         Bitmap newBitmap = Bitmap.createBitmap(bitmapSrc, 0, 0, bitmapSrc.getWidth(), bitmapSrc.getHeight(), matrix, true);
         //bitmapSrc.recycle();
-
         return newBitmap;
     }
-
-    public static Bitmap rotateImage2(Bitmap bitmapSrc, File imagePath) {
-        Matrix matrix = new Matrix();
-        ExifInterface exif;
-        try {
-            exif = new ExifInterface(imagePath.getAbsolutePath());
-            int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL);
-            System.out.println("yuri" + exifOrientation);
-
-            switch (exifOrientation) {
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    matrix.postRotate(90);
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    matrix.postRotate(0);
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    matrix.postRotate(270);
-                    break;
-                case ExifInterface.ORIENTATION_NORMAL:
-                    matrix.postRotate(180);
-                    break;
-                default:
-                    break;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Bitmap newBitmap = Bitmap.createBitmap(bitmapSrc, 0, 0, bitmapSrc.getWidth(), bitmapSrc.getHeight(), matrix, true);
-        //bitmapSrc.recycle();
-
-        return newBitmap;
-    }
-
 }
