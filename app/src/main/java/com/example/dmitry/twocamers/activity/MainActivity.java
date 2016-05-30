@@ -2,15 +2,13 @@ package com.example.dmitry.twocamers.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.RectF;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -20,11 +18,11 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+
 import com.example.dmitry.twocamers.R;
 import com.example.dmitry.twocamers.utils.CameraControler;
 import com.example.dmitry.twocamers.utils.SDWorker;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -176,38 +174,13 @@ public class MainActivity extends Activity {
                     bBitmap = SDWorker.rotateImage(bBitmap, backPhotoFile);
                     fBitmap = SDWorker.rotateImage(fBitmap, frontPhotoFile);
 
-
-                    int frontW = bBitmap.getWidth();
-                    int frontH = bBitmap.getHeight();
-
-                    int backH = bBitmap.getHeight();
-                    int backW = bBitmap.getWidth();
-
-                    //bBitmap = rotateImage(getOrientationFromExif(backPhotoFile,0), bBitmap);
-
-                    RectF rectfFront = new RectF(0, 0, frontW, frontH);
-                    RectF rectfBack = new RectF(0, 0, backW, backH);
-
-                    Matrix matrix = new Matrix();
-                    matrix.setRectToRect(rectfFront, rectfBack, Matrix.ScaleToFit.START);
-
-                    doPicture(bBitmap, fBitmap);
-
-                    //do something
-
-                    //delete files
-                    backPhotoFile.delete();
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(backPhotoFile)));
-                    Log.d(TAG, backPhotoFile.toString() + " was deleted");
-
-                    frontPhotoFile.delete();
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(frontPhotoFile)));
-                    Log.d(TAG, frontPhotoFile.toString() + " was deleted");
+                    SDWorker.writePhotoAndPutToGallery(backPhotoFile, bBitmap, MainActivity.this);
+                    SDWorker.writePhotoAndPutToGallery(frontPhotoFile, fBitmap, MainActivity.this);
 
                     //start next activity
-                    Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
-                    intent.putExtra("photo", outputFile.getAbsoluteFile().toString());
-                    startActivity(intent);
+
+                    startEditor();
+
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -330,55 +303,25 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    public boolean doPicture(Bitmap backBitmap, Bitmap frontBitmap) {
+    public void startEditor() {
+        Intent intent = new Intent(this, EditPhotoActivity.class);
+        intent.putExtra("orientation",getScreenOrientation());
+        intent.putExtra("bFile", backPhotoFile.getAbsoluteFile().toString());
+        intent.putExtra("fFile", frontPhotoFile.getAbsoluteFile().toString());
 
-        int bWidth = backBitmap.getWidth();
-        int bHeight = backBitmap.getHeight();
-
-        Bitmap concatedBitmap = Bitmap.createBitmap(bWidth, bHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(concatedBitmap);
-        Paint paint = null;
-
-
-        canvas.drawBitmap(backBitmap, 0, 0, paint);
-
-        double correctHeight = bHeight / 1.5;
-        canvas.drawBitmap(getResizedBitmap(frontBitmap, bWidth / 5, bHeight / 5), bWidth / 8, (int) correctHeight, paint);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        concatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-        byte[] data = bos.toByteArray();
-
-        outputFile = SDWorker.generateFileUri(directory, 2);
-
-        try {
-            SDWorker.writePhotoAndPutToGallery(outputFile, data, MainActivity.this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return true;
-
+        startActivity(intent);
     }
 
-    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
+    public boolean getScreenOrientation() {
+        Display getOrient = getWindowManager().getDefaultDisplay();
 
-        // CREATE A MATRIX FOR THE MANIPULATION
-        Matrix matrix = new Matrix();
-
-        RectF fRect = new RectF(0, 0, width, height);
-        RectF sRect = new RectF(0, 0, newWidth, newHeight);
-
-        matrix.setRectToRect(fRect, sRect, Matrix.ScaleToFit.START);
-        // RESIZE THE BIT MAP
-        //matrix.postScale(scaleWidth, scaleHeight);
-
-        // "RECREATE" THE NEW BITMAP
-        Bitmap resizedBitmap = Bitmap.createBitmap(
-                bm, 0, 0, width, height, matrix, false);
-        bm.recycle();
-        return resizedBitmap;
+        boolean orientation;
+        if (getOrient.getWidth() < getOrient.getHeight()) {
+            orientation = false;
+        } else {
+           orientation = true;
+        }
+        return orientation;
     }
 
     class HolderCallback implements SurfaceHolder.Callback {

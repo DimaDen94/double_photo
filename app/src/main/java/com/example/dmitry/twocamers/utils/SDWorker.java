@@ -3,12 +3,14 @@ package com.example.dmitry.twocamers.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,6 +55,15 @@ public class SDWorker {
         fos.close();
         return true;
     }
+
+
+   public static boolean writePhotoAndPutToGallery(File file,Bitmap bitmap, Context c) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+        byte[] data = bos.toByteArray();
+        writePhotoAndPutToGallery(file,data,c);
+        return true;
+    }
     private static void galleryAddPic(File file, Context c) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         Uri contentUri = Uri.fromFile(file);
@@ -90,5 +101,26 @@ public class SDWorker {
         Bitmap newBitmap = Bitmap.createBitmap(bitmapSrc, 0, 0, bitmapSrc.getWidth(), bitmapSrc.getHeight(), matrix, true);
         //bitmapSrc.recycle();
         return newBitmap;
+    }
+
+    public static Bitmap createBitmap(int width, File photo) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
+        int outWidth = options.outWidth;
+        if (outWidth > width) {
+            options.inSampleSize = Math.round((float) outWidth / (float) width);
+        }
+        options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
+        Log.d(TAG, bitmap.getWidth() + "    " + bitmap.getHeight());
+        return bitmap;
+    }
+    public static void deleteOthers(File back, File front, Context c) {
+        back.delete();
+        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(back)));
+
+        front.delete();
+        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(front)));
     }
 }
