@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
@@ -25,7 +26,7 @@ public class SDWorker {
         File directory = new File(
                 Environment
                         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-                "MyFolder");
+                "double_photo");
         if (!directory.exists())
             directory.mkdirs();
         return directory;
@@ -116,6 +117,40 @@ public class SDWorker {
         Log.d(TAG, bitmap.getWidth() + "    " + bitmap.getHeight());
         return bitmap;
     }
+
+
+    public static Bitmap createBitmap(File photo) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
+
+        options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
+
+        Log.d(TAG, bitmap.getWidth() + "    " + bitmap.getHeight());
+        return bitmap;
+    }
+
+    public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+
+        RectF fRect = new RectF(0, 0, width, height);
+        RectF sRect = new RectF(0, 0, newWidth, newHeight);
+
+        matrix.setRectToRect(fRect, sRect, Matrix.ScaleToFit.START);
+        // RESIZE THE BIT MAP
+        //matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+
     public static void deleteOthers(File back, File front, Context c) {
         back.delete();
         c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(back)));

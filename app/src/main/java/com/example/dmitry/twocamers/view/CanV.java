@@ -1,15 +1,15 @@
 package com.example.dmitry.twocamers.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.example.dmitry.twocamers.control.Controler;
+import com.example.dmitry.twocamers.utils.CanvasController;
 import com.example.dmitry.twocamers.model.SmallPicture;
 
 import java.io.File;
@@ -20,30 +20,34 @@ import java.io.File;
 public class CanV extends View {
 
     private SmallPicture smallPicture;
-    private Controler controler;
+    private CanvasController controler;
     private Context context;
-    //private ScaleGestureDetector mScaleDetector;
-    //private float mScaleFactor = 1.f;
+
+
+
+    int touchState;
+    final int IDLE = 0;
+    final int TOUCH = 1;
+    final int PINCH = 2;
+    float distx, disty;
+    float dist0 = 1, distCurrent = 1;
+
 
     public CanV(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        //mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+
     }
 
-    public void setControler(Controler controler) {
+    public void setControler(CanvasController controler) {
         this.controler = controler;
         controler.initWidthAndHeight(context);
     }
 
 
-
     public void initBitmaps(File backPhotoFile, File frontPhotoFile) {
         controler.initBitmaps(backPhotoFile, frontPhotoFile);
-    }
-
-    public void initSmallPicture(Bitmap frontBitmap) {
-        smallPicture = controler.initSmallPicture(frontBitmap);
+        smallPicture = controler.initSmallPicture(controler.getFrontBitmap());
     }
 
     @Override
@@ -60,25 +64,49 @@ public class CanV extends View {
 
     }
 
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-
-
-        /*mScaleDetector.onTouchEvent(event);
-        controler.setZoom(controler.getZoom()+mScaleFactor);*/
-
-        switch (event.getAction()) {
+        switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                smallPicture.move((int) event.getX(), (int) event.getY());
-                invalidate();
+                touchState = TOUCH;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                Log.d("log", "yes");
+                touchState = PINCH;
+                distx = event.getX(0) - event.getX(1);
+                disty = event.getY(0) - event.getY(1);
+                dist0 = (float) Math.sqrt(distx * distx + disty * disty);
                 break;
             case MotionEvent.ACTION_MOVE:
 
-                smallPicture.move((int) event.getX(), (int) event.getY());
+                if (touchState == PINCH) {
+                    //Get the current distance
+                    distx = event.getX(0) - event.getX(1);
+                    disty = event.getY(0) - event.getY(1);
+                    distCurrent = (float) Math.sqrt(distx * distx + disty * disty);
+                    float dif = dist0 - distCurrent;
+                    Log.d("log", "" + distCurrent);
+                    controler.setZoom(controler.getZoom() + dif / 5000);
+                    controler.scalingBitmap();
+                    Log.d("log", "zoom " + controler.getZoom());
+                    smallPicture.move((int) event.getX(), (int) event.getY());
+
+                } else
+                    smallPicture.move((int) event.getX(), (int) event.getY());
 
 
                 invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+
+                touchState = IDLE;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                controler.scalingBitmapB();
+                invalidate();
+                touchState = TOUCH;
                 break;
         }
         return true;
@@ -87,23 +115,6 @@ public class CanV extends View {
     public void makeThePicture(ProgressBar progressBar) {
         controler.makeThePicture(progressBar);
     }
-
-
-   /* private class ScaleListener
-            extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
-
-                    // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-            controler.setZoom(mScaleFactor);
-            invalidate();
-            return true;
-        }
-    }*/
-
-
 
 }
 

@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.example.dmitry.twocamers.R;
-import com.example.dmitry.twocamers.control.Controler;
+import com.example.dmitry.twocamers.utils.CanvasController;
 import com.example.dmitry.twocamers.view.CanV;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
     private Button btnPost;
     private CanV canV;
     ProgressBar progressBar;
-    Controler controler;
+    CanvasController controller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +54,9 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
-        controler = new Controler();
-        canV.setControler(controler);
+        controller = new CanvasController();
+        canV.setControler(controller);
         canV.initBitmaps(back, front);
-        canV.initSmallPicture(controler.getFrontBitmap());
-
-
     }
 
     @Override

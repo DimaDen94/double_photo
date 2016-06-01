@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by Dmitry on 18.05.2016.
  */
-public class CameraControler {
+public class CameraController {
 
 
     private static final String TAG = "mActivityLogs";

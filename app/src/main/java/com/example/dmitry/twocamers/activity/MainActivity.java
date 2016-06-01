@@ -2,7 +2,6 @@ package com.example.dmitry.twocamers.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -20,7 +19,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.example.dmitry.twocamers.R;
-import com.example.dmitry.twocamers.utils.CameraControler;
+import com.example.dmitry.twocamers.utils.CameraController;
 import com.example.dmitry.twocamers.utils.SDWorker;
 
 import java.io.File;
@@ -67,7 +66,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        camera = CameraControler.getCameraInstance(0);
+        camera = CameraController.getCameraInstance(0);
         setCameraDisplayOrientationAndParamsToCamera(0);
         //camera.setPreviewDisplay(holder);
         camera.startPreview();
@@ -106,7 +105,7 @@ public class MainActivity extends Activity {
                         public void onPictureTaken(byte[] data, Camera camera) {
                             try {
                                 SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
-                                MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
+                                MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             } finally {
@@ -128,7 +127,7 @@ public class MainActivity extends Activity {
                 public void onPictureTaken(byte[] data, Camera camera) {
                     try {
                         SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
-                        MainActivity.this.camera = CameraControler.flipCamera(camera, 1, holder);
+                        MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {

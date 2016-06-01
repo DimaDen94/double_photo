@@ -1,17 +1,14 @@
-package com.example.dmitry.twocamers.control;
+package com.example.dmitry.twocamers.utils;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.net.Uri;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 
-import com.example.dmitry.twocamers.model.Data;
 import com.example.dmitry.twocamers.MyTask;
-
+import com.example.dmitry.twocamers.model.Data;
 import com.example.dmitry.twocamers.model.SmallPicture;
 import com.example.dmitry.twocamers.utils.SDWorker;
 
@@ -20,7 +17,7 @@ import java.io.File;
 /**
  * Created by Dmitry on 29.05.2016.
  */
-public class Controler {
+public class CanvasController {
     private Bitmap backBitmap;
     private Bitmap frontBitmap;
     private int width;
@@ -38,7 +35,8 @@ public class Controler {
         front = frontPhotoFile;
 
         backBitmap = SDWorker.createBitmap(width, backPhotoFile);
-        frontBitmap = SDWorker.createBitmap((int) (width / zoom), frontPhotoFile);
+        frontBitmap = SDWorker.createBitmap(width, frontPhotoFile);
+        frontBitmap = SDWorker.getResizedBitmap(frontBitmap, (int) (width / zoom), (int) (height / zoom));
     }
 
     public void initWidthAndHeight(Context context) {
@@ -70,5 +68,26 @@ public class Controler {
         return frontBitmap;
     }
 
+    public double getZoom() {
+        return zoom;
+
+    }
+
+    public void setZoom(double zoom) {
+        if (zoom > 10)
+            zoom = 10;
+        if (zoom < 1)
+            zoom = 1;
+        this.zoom = zoom;
+    }
+
+    public void scalingBitmap() {
+        smallPicture.setPicture(SDWorker.getResizedBitmap(smallPicture.getPicture(), (int) (width / zoom), (int) (height / zoom)));
+    }
+
+    public void scalingBitmapB() {
+        smallPicture.setPicture(SDWorker.createBitmap(width, front));
+        smallPicture.setPicture(SDWorker.getResizedBitmap(smallPicture.getPicture(), (int) (width / zoom), (int) (height / zoom)));
+    }
 
 }
