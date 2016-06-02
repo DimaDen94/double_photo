@@ -1,4 +1,4 @@
-package com.example.dmitry.twocamers.utils;
+package com.example.dmitry.twocamera.utils;
 
 import android.content.Context;
 import android.content.Intent;

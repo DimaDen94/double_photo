@@ -1,14 +1,10 @@
-package com.example.dmitry.twocamers.utils;
+package com.example.dmitry.twocamera.utils;
 
-import android.app.Activity;
-import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by Dmitry on 18.05.2016.

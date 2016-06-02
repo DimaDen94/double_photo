@@ -1,4 +1,4 @@
-package com.example.dmitry.twocamers.activity;
+package com.example.dmitry.twocamera.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,9 +18,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.example.dmitry.twocamers.R;
-import com.example.dmitry.twocamers.utils.CameraController;
-import com.example.dmitry.twocamers.utils.SDWorker;
+import com.example.dmitry.twocamera.R;
+import com.example.dmitry.twocamera.utils.CameraController;
+import com.example.dmitry.twocamera.utils.SDWorker;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
 
     private File backPhotoFile;
     private File frontPhotoFile;
-    private File outputFile;
 
     final boolean FULL_SCREEN = true;
 
@@ -69,7 +68,8 @@ public class MainActivity extends Activity {
         camera = CameraController.getCameraInstance(0);
         setCameraDisplayOrientationAndParamsToCamera(0);
         //camera.setPreviewDisplay(holder);
-        camera.startPreview();
+        //camera.startPreview();
+        //holder.addCallback(holderCallback);
         //updateFocus();
         setPreviewSize(FULL_SCREEN);
     }
@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean takeAndSaveBackPhoto(final File file, final File file2) {
-
+        final int index = getFrontCameraId();
         List<String> supportedFocusModes = camera.getParameters().getSupportedFocusModes();
         boolean hasAutoFocus = supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO);
         if (hasAutoFocus) {
@@ -105,20 +105,20 @@ public class MainActivity extends Activity {
                         public void onPictureTaken(byte[] data, Camera camera) {
                             try {
                                 SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
-                                MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
+                                if (index != -1)
+                                    MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             } finally {
                                 Log.d(TAG, "flip");
-                                setCameraDisplayOrientationAndParamsToCamera(1);
+                                if (index != -1)
+                                    setCameraDisplayOrientationAndParamsToCamera(1);
                                 setPreviewSize(FULL_SCREEN);
                                 takeAndSaveFrontPhotoAndDoPicture(file2);
                                 Log.d(TAG, "take");
                             }
-
                         }
                     });
-
                 }
             });
         } else {
@@ -127,12 +127,15 @@ public class MainActivity extends Activity {
                 public void onPictureTaken(byte[] data, Camera camera) {
                     try {
                         SDWorker.writePhotoAndPutToGallery(file, data, MainActivity.this);
-                        MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
+                        if (index != -1)
+                            MainActivity.this.camera = CameraController.flipCamera(camera, 1, holder);
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
                         Log.d(TAG, "flip");
-                        setCameraDisplayOrientationAndParamsToCamera(1);
+
+                        if (index != -1)
+                            setCameraDisplayOrientationAndParamsToCamera(1);
                         setPreviewSize(FULL_SCREEN);
                         takeAndSaveFrontPhotoAndDoPicture(file2);
                         Log.d(TAG, "take");
@@ -142,6 +145,15 @@ public class MainActivity extends Activity {
         }
 
         return true;
+    }
+
+    int getFrontCameraId() {
+        Camera.CameraInfo ci = new Camera.CameraInfo();
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            Camera.getCameraInfo(i, ci);
+            if (ci.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) return i;
+        }
+        return -1; // No front-facing camera found
     }
 
     private boolean takeAndSaveFrontPhotoAndDoPicture(final File file) {
@@ -304,7 +316,7 @@ public class MainActivity extends Activity {
 
     public void startEditor() {
         Intent intent = new Intent(this, EditPhotoActivity.class);
-        intent.putExtra("orientation",getScreenOrientation());
+        intent.putExtra("orientation", getScreenOrientation());
         intent.putExtra("bFile", backPhotoFile.getAbsoluteFile().toString());
         intent.putExtra("fFile", frontPhotoFile.getAbsoluteFile().toString());
 
@@ -318,7 +330,7 @@ public class MainActivity extends Activity {
         if (getOrient.getWidth() < getOrient.getHeight()) {
             orientation = false;
         } else {
-           orientation = true;
+            orientation = true;
         }
         return orientation;
     }

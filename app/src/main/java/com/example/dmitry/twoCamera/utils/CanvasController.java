@@ -1,16 +1,16 @@
-package com.example.dmitry.twocamers.utils;
+package com.example.dmitry.twocamera.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
-import com.example.dmitry.twocamers.MyTask;
-import com.example.dmitry.twocamers.model.Data;
-import com.example.dmitry.twocamers.model.SmallPicture;
-import com.example.dmitry.twocamers.utils.SDWorker;
+import com.example.dmitry.twocamera.MyTask;
+import com.example.dmitry.twocamera.model.Data;
+import com.example.dmitry.twocamera.model.SmallPicture;
 
 import java.io.File;
 
@@ -53,10 +53,10 @@ public class CanvasController {
         return smallPicture = new SmallPicture(frontBitmap, width / 5, height / 6 * 4);
     }
 
-    public void makeThePicture(ProgressBar progressBar) {
+    public void makeThePicture(ProgressBar progressBar, Button btnSave) {
         progressBar.setVisibility(ProgressBar.VISIBLE);
         MyTask task = new MyTask();
-        Data data = new Data(progressBar, back, front, backBitmap.getWidth(), backBitmap.getHeight(), smallPicture, zoom, c);
+        Data data = new Data(btnSave, progressBar, back, front, backBitmap.getWidth(), backBitmap.getHeight(), smallPicture, zoom, c);
         task.execute(data);
     }
 

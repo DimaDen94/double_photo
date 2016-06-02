@@ -1,4 +1,4 @@
-package com.example.dmitry.twocamers.view;
+package com.example.dmitry.twocamera.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,23 +7,20 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
-import com.example.dmitry.twocamers.utils.CanvasController;
-import com.example.dmitry.twocamers.model.SmallPicture;
+import com.example.dmitry.twocamera.utils.CanvasController;
+import com.example.dmitry.twocamera.model.SmallPicture;
 
 import java.io.File;
 
-/**
- * Created by Dmitry on 26.05.2016.
- */
+
 public class CanV extends View {
 
     private SmallPicture smallPicture;
-    private CanvasController controler;
+    private CanvasController canvasController;
     private Context context;
-
-
 
     int touchState;
     final int IDLE = 0;
@@ -39,29 +36,24 @@ public class CanV extends View {
 
     }
 
-    public void setControler(CanvasController controler) {
-        this.controler = controler;
-        controler.initWidthAndHeight(context);
+    public void setCanvasController(CanvasController canvasController) {
+        this.canvasController = canvasController;
+        canvasController.initWidthAndHeight(context);
     }
 
 
     public void initBitmaps(File backPhotoFile, File frontPhotoFile) {
-        controler.initBitmaps(backPhotoFile, frontPhotoFile);
-        smallPicture = controler.initSmallPicture(controler.getFrontBitmap());
+        canvasController.initBitmaps(backPhotoFile, frontPhotoFile);
+        smallPicture = canvasController.initSmallPicture(canvasController.getFrontBitmap());
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         canvas.save();
-
-
-        canvas.drawBitmap(controler.getBackBitmap(), 0, 0, new Paint(Paint.FILTER_BITMAP_FLAG));
+        canvas.drawBitmap(canvasController.getBackBitmap(), 0, 0, new Paint(Paint.FILTER_BITMAP_FLAG));
         canvas.drawBitmap(smallPicture.getPicture(), smallPicture.getX(), smallPicture.getY(), new Paint(Paint.FILTER_BITMAP_FLAG));
-
         canvas.restore();
-
     }
 
 
@@ -80,7 +72,6 @@ public class CanV extends View {
                 dist0 = (float) Math.sqrt(distx * distx + disty * disty);
                 break;
             case MotionEvent.ACTION_MOVE:
-
                 if (touchState == PINCH) {
                     //Get the current distance
                     distx = event.getX(0) - event.getX(1);
@@ -88,33 +79,32 @@ public class CanV extends View {
                     distCurrent = (float) Math.sqrt(distx * distx + disty * disty);
                     float dif = dist0 - distCurrent;
                     Log.d("log", "" + distCurrent);
-                    controler.setZoom(controler.getZoom() + dif / 5000);
-                    controler.scalingBitmap();
-                    Log.d("log", "zoom " + controler.getZoom());
+                    canvasController.setZoom(canvasController.getZoom() + dif / 5000);
+                    canvasController.scalingBitmap();
+                    Log.d("log", "zoom " + canvasController.getZoom());
                     smallPicture.move((int) event.getX(), (int) event.getY());
-
                 } else
                     smallPicture.move((int) event.getX(), (int) event.getY());
 
 
                 invalidate();
                 break;
+            case MotionEvent.ACTION_POINTER_UP:
+                canvasController.scalingBitmapB();
+                invalidate();
+                touchState = TOUCH;
+                break;
             case MotionEvent.ACTION_UP:
 
                 touchState = IDLE;
                 break;
-            case MotionEvent.ACTION_POINTER_UP:
-                controler.scalingBitmapB();
-                invalidate();
-                touchState = TOUCH;
-                break;
+
         }
         return true;
     }
 
-    public void makeThePicture(ProgressBar progressBar) {
-        controler.makeThePicture(progressBar);
+    public void makeThePicture(ProgressBar progressBar, Button btnSave) {
+        canvasController.makeThePicture(progressBar, btnSave);
     }
-
 }
 

@@ -1,6 +1,7 @@
-package com.example.dmitry.twocamers.model;
+package com.example.dmitry.twocamera.model;
 
 import android.content.Context;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import java.io.File;
@@ -17,14 +18,15 @@ public class Data {
     private double zoom;
     private Context c;
     private ProgressBar progressBar;
+    private Button btnSave;
 
     public ProgressBar getProgressBar() {
         return progressBar;
     }
 
-    public Data(ProgressBar progressBar, File back, File front, int backBitmapWidth, int backBitmapHeight, SmallPicture smallPicture, double zoom, Context c) {
+    public Data(Button btnPost, ProgressBar progressBar, File back, File front, int backBitmapWidth, int backBitmapHeight, SmallPicture smallPicture, double zoom, Context c) {
         this.progressBar = progressBar;
-
+        this.btnSave = btnPost;
         this.back = back;
         this.front = front;
         this.backBitmapWidth = backBitmapWidth;
@@ -32,6 +34,10 @@ public class Data {
         this.smallPicture = smallPicture;
         this.zoom = zoom;
         this.c = c;
+    }
+
+    public Button getBtnPost() {
+        return btnSave;
     }
 
     public File getBack() {

@@ -1,4 +1,4 @@
-package com.example.dmitry.twocamers.activity;
+package com.example.dmitry.twocamera.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,16 +10,15 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-import com.example.dmitry.twocamers.R;
-import com.example.dmitry.twocamers.utils.CanvasController;
-import com.example.dmitry.twocamers.view.CanV;
+import com.example.dmitry.twocamera.R;
+import com.example.dmitry.twocamera.utils.CanvasController;
+import com.example.dmitry.twocamera.view.CanV;
 
 import java.io.File;
 
 public class EditPhotoActivity extends Activity implements View.OnClickListener {
 
     private Button btnSave;
-    private Button btnPost;
     private CanV canV;
     ProgressBar progressBar;
     CanvasController controller;
@@ -49,13 +48,12 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
 
         canV = (CanV) findViewById(R.id.canvas);
         btnSave = (Button) findViewById(R.id.button);
-        btnPost = (Button) findViewById(R.id.button2);
         btnSave.setOnClickListener(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
         controller = new CanvasController();
-        canV.setControler(controller);
+        canV.setCanvasController(controller);
         canV.initBitmaps(back, front);
     }
 
@@ -66,8 +64,8 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
 
     @Override
     public void onClick(View v) {
-        canV.makeThePicture(progressBar);
 
+        canV.makeThePicture(progressBar,btnSave);
     }
 
 

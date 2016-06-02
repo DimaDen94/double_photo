@@ -1,10 +1,8 @@
-package com.example.dmitry.twocamers.model;
+package com.example.dmitry.twocamera.model;
 
 import android.graphics.Bitmap;
 
-/**
- * Created by Dmitry on 26.05.2016.
- */
+
 public class SmallPicture {
     private int x;
     private int y;
