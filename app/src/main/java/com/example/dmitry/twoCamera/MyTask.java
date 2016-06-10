@@ -29,13 +29,15 @@ public class MyTask extends AsyncTask<Data, Void, Void> {
 
     @Override
     protected Void doInBackground(Data... params) {
+
         progressBar = params[0].getProgressBar();
         btnSave = params[0].getBtnPost();
         back = params[0].getBack();
         front = params[0].getFront();
 
-        Bitmap bBitmap = createBitmap(back);
-        Bitmap fBitmap = createBitmap(front);
+        Bitmap bBitmap = SDWorker.createBitmap(back);
+        //Bitmap fBitmap = SDWorker.createBitmap(front);
+
 
         int largeW = bBitmap.getWidth() / params[0].getBackBitmapWidth();
         int largeH = bBitmap.getHeight() / params[0].getBackBitmapHeight();
@@ -73,19 +75,8 @@ public class MyTask extends AsyncTask<Data, Void, Void> {
         super.onPostExecute(aVoid);
         progressBar.setVisibility(ProgressBar.INVISIBLE);
         btnSave.setEnabled(true);
-        SDWorker.deleteOthers(back, front,c);
     }
 
-    private Bitmap createBitmap(File photo) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
 
-        options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(photo.getAbsolutePath(), options);
-
-        Log.d(TAG, bitmap.getWidth() + "    " + bitmap.getHeight());
-        return bitmap;
-    }
 
 }

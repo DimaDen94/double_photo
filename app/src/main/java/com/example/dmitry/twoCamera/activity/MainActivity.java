@@ -48,9 +48,8 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         directory = SDWorker.createDirectory();
-
 
         sv = (SurfaceView) findViewById(R.id.surfaceView);
         holder = sv.getHolder();
@@ -67,10 +66,7 @@ public class MainActivity extends Activity {
         super.onResume();
         camera = CameraController.getCameraInstance(0);
         setCameraDisplayOrientationAndParamsToCamera(0);
-        //camera.setPreviewDisplay(holder);
-        //camera.startPreview();
-        //holder.addCallback(holderCallback);
-        //updateFocus();
+
         setPreviewSize(FULL_SCREEN);
     }
 

@@ -153,9 +153,10 @@ public class SDWorker {
 
     public static void deleteOthers(File back, File front, Context c) {
         back.delete();
-        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(back)));
+        //c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(back)));
 
         front.delete();
-        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(front)));
+        //c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(front)));
     }
+
 }

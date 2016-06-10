@@ -35,6 +35,7 @@ public class CanvasController {
         front = frontPhotoFile;
 
         backBitmap = SDWorker.createBitmap(width, backPhotoFile);
+        //backBitmap = SDWorker.getResizedBitmap(backBitmap,width,height);
         frontBitmap = SDWorker.createBitmap(width, frontPhotoFile);
         frontBitmap = SDWorker.getResizedBitmap(frontBitmap, (int) (width / zoom), (int) (height / zoom));
     }
@@ -56,7 +57,9 @@ public class CanvasController {
     public void makeThePicture(ProgressBar progressBar, Button btnSave) {
         progressBar.setVisibility(ProgressBar.VISIBLE);
         MyTask task = new MyTask();
-        Data data = new Data(btnSave, progressBar, back, front, backBitmap.getWidth(), backBitmap.getHeight(), smallPicture, zoom, c);
+        Data data = Data.getInstance();
+        if (back != null)
+            data.setData(btnSave, progressBar, back, front, backBitmap.getWidth(), backBitmap.getHeight(), smallPicture, zoom, c);
         task.execute(data);
     }
 

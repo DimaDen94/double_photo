@@ -10,6 +10,9 @@ import java.io.File;
  * Created by Dmitry on 29.05.2016.
  */
 public class Data {
+
+    private static Data ourInstance = new Data();
+
     private File back;
     private File front;
     private int backBitmapWidth;
@@ -24,7 +27,14 @@ public class Data {
         return progressBar;
     }
 
-    public Data(Button btnPost, ProgressBar progressBar, File back, File front, int backBitmapWidth, int backBitmapHeight, SmallPicture smallPicture, double zoom, Context c) {
+    public static Data getInstance() {
+        return ourInstance;
+    }
+
+
+    private Data() {
+    }
+    public void setData(Button btnPost, ProgressBar progressBar, File back, File front, int backBitmapWidth, int backBitmapHeight, SmallPicture smallPicture, double zoom, Context c) {
         this.progressBar = progressBar;
         this.btnSave = btnPost;
         this.back = back;

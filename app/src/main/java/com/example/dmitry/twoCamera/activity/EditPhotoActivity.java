@@ -3,7 +3,12 @@ package com.example.dmitry.twocamera.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,6 +27,8 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
     private CanV canV;
     ProgressBar progressBar;
     CanvasController controller;
+    File back;
+    File front;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +41,16 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
 
         Intent intent = getIntent();
         boolean b = false;
-        boolean or = intent.getBooleanExtra("orientation",b);
+        boolean or = intent.getBooleanExtra("orientation", b);
 
-        if(or)
+        if (or)
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         else
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 
-        File back = new File(intent.getStringExtra("bFile"));
-        File front = new File(intent.getStringExtra("fFile"));
+        back = new File(intent.getStringExtra("bFile"));
+        front = new File(intent.getStringExtra("fFile"));
 
 
         canV = (CanV) findViewById(R.id.canvas);
@@ -65,8 +72,23 @@ public class EditPhotoActivity extends Activity implements View.OnClickListener 
     @Override
     public void onClick(View v) {
 
-        canV.makeThePicture(progressBar,btnSave);
+        canV.makeThePicture(progressBar, btnSave);
+    }
+
+    @Override
+    protected void onStop() {
+        deletePhoto(back);
+        deletePhoto(front);
+        super.onStop();
     }
 
 
+    public void deletePhoto(File file) {
+        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+            public void onScanCompleted(String path, Uri uri) {
+                getContentResolver().delete(uri, null,
+                        null);
+            }
+        });
+    }
 }
